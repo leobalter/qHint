@@ -11,62 +11,61 @@
 
         // now I check which JS Library is on to make the ajax request
         var callback = function(sourceFile) {
-            var isPrototype    = (window.Prototype && window.Prototype.version
-                                && window.Ajax && typeof window.Ajax.Request === 'function'), // Prototype should be loaded without losing the Ajax object
+            var isPrototype = (window.Prototype && window.Prototype.version && window.Ajax && typeof window.Ajax.Request === 'function'), // Prototype should be loaded without losing the Ajax object
                 isjQuery   = (window.jQuery && typeof jQuery.ajax === 'function'),
                 isDojo     = (window.dojo && typeof dojo.xhrGet === 'function'),
-                isMootools = (window.Request && typeof window.Request.HTML);
+                isMootools = (window.Request && typeof window.Request.HTML),
 
-            var cbPrototype = function(sourceFile) {
-                return new Ajax.Request( sourceFile, {
-                   onSuccess : function(transport) {
-                       start();
-                       validateFile(transport.responseText);
-                   },
-                   onError : function(message) {
-                       qHintAjaxError(message);
-                   }
-                });
-            },
-            cbjQuery = function(sourceFile) {
-                jQuery.ajax({
-                    url: sourceFile,
-                    success: function(source) {
-                        start();
-                        validateFile(source);
-                    },
-                    error: function(a, b, message) {
-                        qHintAjaxError(message);
-                    }
+                cbPrototype = function(sourceFile) {
+                    return new Ajax.Request( sourceFile, {
+                       onSuccess : function(transport) {
+                           start();
+                           validateFile(transport.responseText);
+                       },
+                       onError : function(message) {
+                           qHintAjaxError(message);
+                       }
+                    });
+                },
+                cbjQuery = function(sourceFile) {
+                    jQuery.ajax({
+                        url: sourceFile,
+                        success: function(source) {
+                            start();
+                            validateFile(source);
+                        },
+                        error: function(a, b, message) {
+                            qHintAjaxError(message);
+                        }
 
-                });
-            },
-            cbDojo = function(sourceFile) {
-                dojo.xhrGet({
-                    url: sourceFile,
-                    load: function(source) {
-                        start();
-                        validateFile(source);
-                    },
-                    error: function(message) {
-                        qHintAjaxError(message);
-                    }
-                });
-            },
-            cbMootools = function(sourceFile) {
-                var MooToolsRequest = Request({
-                    url: sourceFile,
-                    onSuccess: function(source) {
-                        start();
-                        validateFile(source);
-                    },
-                    onFailure: function(message) {
-                        qHintAjaxError(message);
-                    }
-                });
+                    });
+                },
+                cbDojo = function(sourceFile) {
+                    dojo.xhrGet({
+                        url: sourceFile,
+                        load: function(source) {
+                            start();
+                            validateFile(source);
+                        },
+                        error: function(message) {
+                            qHintAjaxError(message);
+                        }
+                    });
+                },
+                cbMootools = function(sourceFile) {
+                    var MooToolsRequest = Request({
+                        url: sourceFile,
+                        onSuccess: function(source) {
+                            start();
+                            validateFile(source);
+                        },
+                        onFailure: function(message) {
+                            qHintAjaxError(message);
+                        }
+                    });
 
-                MooToolsRequest.send();
-            };
+                    MooToolsRequest.send();
+                };
 
 
             return ( (isjQuery && cbjQuery) || (isDojo && cbDojo) || (isPrototype && cbPrototype) || (isMootools && cbMootools) );
@@ -91,9 +90,7 @@
                     continue;
                 }
 
-                ok(false, err.reason
-                        + " on line " + err.line
-                        + ", character " + err.character);
+                ok(false, err.reason + " on line " + err.line + ", character " + err.character);
             }
         }
 
