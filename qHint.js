@@ -11,29 +11,13 @@
 
         // now I check which JS Library is on to make the ajax request
         var callback = function(sourceFile) {
-            var isPrototype = (window.Prototype && window.Prototype.version && window.Ajax && typeof window.Ajax.Request === 'function'), // Prototype should be loaded without losing the Ajax object
-                isjQuery   = (window.jQuery && typeof jQuery.ajax === 'function'),
+            var isjQuery   = (window.jQuery && typeof jQuery.ajax === 'function'),
                 isDojo     = (window.dojo && typeof dojo.xhrGet === 'function'),
-                isMootools = (window.Request && typeof window.Request.HTML),
 
-                cbPrototype = function(sourceFile) {
-                    return new Ajax.Request( sourceFile, {
-                       onSuccess : function(transport) {
-                           start();
-                           validateFile(transport.responseText);
-                       },
-                       onError : function(message) {
-                           qHintAjaxError(message);
-                       }
-                    });
-                },
                 cbjQuery = function(sourceFile) {
                     jQuery.ajax({
                         url: sourceFile,
-                        success: function(source) {
-                            start();
-                            validateFile(source);
-                        },
+                        success: validateFile,
                         error: function(a, b, message) {
                             qHintAjaxError(message);
                         }
@@ -43,42 +27,54 @@
                 cbDojo = function(sourceFile) {
                     dojo.xhrGet({
                         url: sourceFile,
-                        load: function(source) {
-                            start();
-                            validateFile(source);
-                        },
-                        error: function(message) {
-                            qHintAjaxError(message);
-                        }
+                        load: validateFile,
+                        error: qHintAjaxError
                     });
                 },
-                cbMootools = function(sourceFile) {
-                    var MooToolsRequest = Request({
-                        url: sourceFile,
-                        onSuccess: function(source) {
-                            start();
-                            validateFile(source);
-                        },
-                        onFailure: function(message) {
-                            qHintAjaxError(message);
-                        }
-                    });
 
-                    MooToolsRequest.send();
+                pureAjax = function(sourceFile) { // I don't prefer this, but it's a pure ajax handler
+                    var ajaxRequest;
+
+                    try {
+                        ajaxRequest = new XMLHttpRequest();
+                    } catch (e) {
+                        try {
+                            ajaxRequest = new ActiveXObject("Msxml2.XMLHTTP");
+                        } catch (e) {
+                            try {
+                                ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+                            } catch (e) {
+                                // Something went wrong
+                                qHintAjaxError('There\'s no AJAX in your browser that I handle yet, try enabling jQuery or Dojo');
+                                return false;
+                            }
+                        }
+                    }
+                    ajaxRequest.onreadystatechange = function() {
+                        if (ajaxRequest.readyState === 4) {
+                            if ( ajaxRequest.status === 200 ) {
+                                validateFile(ajaxRequest.responseText);
+                            } else {
+                                qHintAjaxError(ajaxRequest.statusText);
+                            }
+                        }
+                    };
+                    ajaxRequest.open("GET", sourceFile, true);
+                    ajaxRequest.send(null);
                 };
 
-
-            return ( (isjQuery && cbjQuery) || (isDojo && cbDojo) || (isPrototype && cbPrototype) || (isMootools && cbMootools) );
-
+            return ( (isjQuery && cbjQuery) || (isDojo && cbDojo) || pureAjax );
         };
 
         function validateFile(source) {
             var i, len, err,
                     result = JSHINT(source, options);
 
+            start();
+
             expect(1); // You should aways expect 1 test, you should WIN!
 
-            ok(result, "qHint got the source file, if you see more errors you're not a Jedi yet");
+            ok(result, "qHint got the source file, if you see this as an error you're not a Jedi yet, young padawan");
 
             if (result) {
                 return;
@@ -96,8 +92,6 @@
 
         // defining the test routine
         var jsHintTest = function (name, sourceFile, options) {
-
-
             return asyncTest(name, function() {
                 callback()(sourceFile);
             });
@@ -109,11 +103,5 @@
     })();
 
     window.qHint = qHint;
-
-
-//    module("jsHint tests");
-//    jsHintTest("File that adheres to style guidelines", "demoScripts/pass.js");
-//    jsHintTest("File without any style", "demoScripts/fail.js");
-
 
 })(window);
