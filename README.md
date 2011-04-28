@@ -2,7 +2,7 @@
 
 this is a fork from @gyoshev repo's that's integrates jsHint to qUnit.
 
-I'd just made it running with other js libraries than jQuery.
+It now works from jQuery, Dojo or pure javascript ajax requests.
 
 #Integrating jsHint into qUnit
 
