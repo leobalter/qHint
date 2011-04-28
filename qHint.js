@@ -37,14 +37,13 @@
 
                     try {
                         ajaxRequest = new XMLHttpRequest();
-                    } catch (e) {
+                    } catch (can) {
                         try {
                             ajaxRequest = new ActiveXObject("Msxml2.XMLHTTP");
-                        } catch (e) {
+                        } catch (haz) {
                             try {
                                 ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
-                            } catch (e) {
-                                // Something went wrong
+                            } catch (cheezburger) {
                                 qHintAjaxError('There\'s no AJAX in your browser that I handle yet, try enabling jQuery or Dojo');
                                 return false;
                             }
