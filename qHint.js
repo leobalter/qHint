@@ -1,85 +1,53 @@
-(function(window, undefined) {
-    var document = window.document;
-
-    var qHint = (function(name, sourceFile, options) {
-
-        var qHintAjaxError = function (message) {
-            start();
-            ok(false, 'Ajax error: ' + message);
+(function() {
+    // modified version of XHR script by PPK, http://www.quirksmode.org/js/xmlhttp.html
+    function sendRequest(url,callback) {
+        var req = createXMLHTTPObject();
+        if (!req) return;
+        var method = "GET";
+        req.open(method,url,true);
+        req.setRequestHeader('User-Agent','XMLHTTP/1.0');
+        req.onreadystatechange = function () {
+            if (req.readyState != 4) return;
+            if (req.status != 200 && req.status != 304) {
+                alert("HTTP error " + req.status + " occured.");
+                return;
+            }
+            callback(req);
         };
 
+        if (req.readyState == 4) return;
+        req.send();
+    }
 
-        // now I check which JS Library is on to make the ajax request
-        var callback = function(sourceFile) {
-            var isjQuery   = (window.jQuery && typeof jQuery.ajax === 'function'),
-                isDojo     = (window.dojo && typeof dojo.xhrGet === 'function'),
+    var XMLHttpFactories = [
+        function () { return new XMLHttpRequest(); },
+        function () { return new ActiveXObject("Msxml2.XMLHTTP"); },
+        function () { return new ActiveXObject("Msxml3.XMLHTTP"); },
+        function () { return new ActiveXObject("Microsoft.XMLHTTP"); }
+    ];
 
-                cbjQuery = function(sourceFile) {
-                    jQuery.ajax({
-                        url: sourceFile,
-                        success: validateFile,
-                        error: function(a, b, message) {
-                            qHintAjaxError(message);
-                        }
+    function createXMLHTTPObject() {
+        for (var i = 0; i < XMLHttpFactories.length; i++) {
+            try {
+                return XMLHttpFactories[i]();
+            } catch (e) {}
+        }
+        return false;
+    }
 
-                    });
-                },
-                cbDojo = function(sourceFile) {
-                    dojo.xhrGet({
-                        url: sourceFile,
-                        load: validateFile,
-                        error: qHintAjaxError
-                    });
-                },
-
-                pureAjax = function(sourceFile) { // I don't prefer this, but it's a pure ajax handler
-                    var ajaxRequest;
-
-                    try {
-                        ajaxRequest = new XMLHttpRequest();
-                    } catch (can) {
-                        try {
-                            ajaxRequest = new ActiveXObject("Msxml2.XMLHTTP");
-                        } catch (haz) {
-                            try {
-                                ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
-                            } catch (cheezburger) {
-                                qHintAjaxError('There\'s no AJAX in your browser that I handle yet, try enabling jQuery or Dojo');
-                                return false;
-                            }
-                        }
-                    }
-                    ajaxRequest.onreadystatechange = function() {
-                        if (ajaxRequest.readyState === 4) {
-                            if ( ajaxRequest.status === 200 ) {
-                                validateFile(ajaxRequest.responseText);
-                            } else {
-                                qHintAjaxError(ajaxRequest.statusText);
-                            }
-                        }
-                    };
-                    ajaxRequest.open("GET", sourceFile, true);
-                    ajaxRequest.send(null);
-                };
-
-            return ( (isjQuery && cbjQuery) || (isDojo && cbDojo) || pureAjax );
-        };
-
+    // the qHint function
+    window.qHint = function (name, sourceFile, options) {
         function validateFile(source) {
             var i, len, err,
-                    result = JSHINT(source, options);
+                result = JSHINT(source, options);
 
-            start();
-
-            expect(1); // You should aways expect 1 test, you should WIN!
-
-            ok(result, "qHint got the source file, if you see this as an error you're not a Jedi yet, young padawan");
+            ok(result);
 
             if (result) {
                 return;
             }
 
-            for (i = 0,len = JSHINT.errors.length; i < len; i++) {
+            for (i = 0, len = JSHINT.errors.length; i < len; i++) {
                 err = JSHINT.errors[i];
                 if (!err) {
                     continue;
@@ -89,18 +57,11 @@
             }
         }
 
-        // defining the test routine
-        var jsHintTest = function (name, sourceFile, options) {
-            return asyncTest(name, function() {
-                callback()(sourceFile);
+        return asyncTest(name, function() {	
+            sendRequest(sourceFile, function(source) {
+                start();
+                validateFile(source.responseText);
             });
-        };
-
-
-        return jsHintTest;
-
-    })();
-
-    window.qHint = qHint;
-
-})(window);
+        });
+    };
+})();
