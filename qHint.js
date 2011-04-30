@@ -1,4 +1,4 @@
-(function() {
+(function(window) {
     // modified version of XHR script by PPK, http://www.quirksmode.org/js/xmlhttp.html
     function sendRequest(url,callback) {
         var req = createXMLHTTPObject();
@@ -64,4 +64,4 @@
             });
         });
     };
-})();
+})(window, undefined);

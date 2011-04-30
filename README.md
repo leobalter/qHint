@@ -11,4 +11,5 @@ This small script lets you integrate jsHint coding style validation into your qU
 2. Call the `qHint` function like this:
 
     `qHint(*name*, *file* [, *options*]);`
+
  
