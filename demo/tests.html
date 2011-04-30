@@ -1,31 +1,29 @@
 <!doctype html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>qHint demonstration</title>
-    <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <link rel="stylesheet" href="../qunit/qunit/qunit.css" media="screen" />
-    <script src="../qunit/qunit/qunit.js"></script>
+    <link rel="stylesheet" href="../qunit/qunit.css" media="screen" />
+    <script src="../qunit/qunit.js"></script>
     <script src="../jshint/jshint.js"></script>
     <script src="../qhint.js"></script>
 
     <script>
-        $(document).ready(function(){
-            module("Regular tests");
+        module("Regular tests");
 
-            test("sample", function() {
-                ok( true, "all pass" );
-            });
-
-            module("jsHint tests");
-
-            jsHintTest("File that adheres to style guidelines", "pass.js");
-            
-            jsHintTest("File without any style", "fail.js");
+        test("sample", function() {
+            ok( true, "all pass" );
         });
+
+        module("jsHint tests");
+
+        qHint("File that adheres to style guidelines", "pass.js");
+        
+        qHint("File without any style", "fail.js");
     </script>
 </head>
 <body>
-    <h1 id="qunit-header">QUnit and jsHint example</h1>
+    <h1 id="qunit-header">qHint example</h1>
     <h2 id="qunit-banner"></h2>
     <div id="qunit-testrunner-toolbar"></div>
     <h2 id="qunit-userAgent"></h2>
